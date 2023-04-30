@@ -1,95 +1,98 @@
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-class FizzBuzz {
+class FizzBuz {
     private int n;
     private BlockingQueue<String> queue;
-    private volatile int currNumber;
 
-    public FizzBuzz(int n) {
+    public FizzBuz(int n) {
         this.n = n;
-        queue = new LinkedBlockingQueue<>();
-        currNumber = 1;
+        this.queue = new LinkedBlockingQueue<>();
+        queue.add("1");
     }
 
-    public void fizz() throws InterruptedException {
-        while (currNumber <= n) {
-            if (currNumber % 3 == 0 && currNumber % 5 != 0) {
+    public void fizz(Runnable printFizz) throws InterruptedException {
+        for (int i = 3; i <= n; i += 3) {
+            if (i % 5 != 0) {
                 queue.put("fizz");
             }
-            currNumber++;
         }
     }
 
-    public void buzz() throws InterruptedException {
-        while (currNumber <= n) {
-            if (currNumber % 3 != 0 && currNumber % 5 == 0) {
+    public void buzz(Runnable printBuzz) throws InterruptedException {
+        for (int i = 5; i <= n; i += 5) {
+            if (i % 3 != 0) {
                 queue.put("buzz");
             }
-            currNumber++;
         }
     }
 
-    public void fizzbuzz() throws InterruptedException {
-        while (currNumber <= n) {
-            if (currNumber % 3 == 0 && currNumber % 5 == 0) {
-                queue.put("fizzbuzz");
-            }
-            currNumber++;
+    public void fizzbuzz(Runnable printFizzBuzz) throws InterruptedException {
+        for (int i = 15; i <= n; i += 15) {
+            queue.put("fizzbuzz");
         }
     }
 
-    public void number() throws InterruptedException {
-        while (currNumber <= n) {
-            if (!queue.isEmpty()) {
-                System.out.println(queue.take());
+    public void number(Runnable printNumber) throws InterruptedException {
+        for (int i = 2; i <= n; i++) {
+            if (i % 3 != 0 && i % 5 != 0) {
+                queue.put(Integer.toString(i));
             } else {
-                if (currNumber % 3 != 0 && currNumber % 5 != 0) {
-                    System.out.println(currNumber);
+
+                while (queue.size() == 0) {
+                    Thread.sleep(1);
                 }
+                System.out.println(queue.take());
             }
         }
     }
 
     public static void main(String[] args) {
-        FizzBuzz fizzBuzz = new FizzBuzz(15);
-        Thread threadA = new Thread(() -> {
+        int n = 15;
+        FizzBuz fizzBuzz = new FizzBuz(n);
+
+        Thread t1 = new Thread(() -> {
             try {
-                fizzBuzz.fizz();
+                fizzBuzz.fizz(() -> System.out.println("fizz"));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
-        Thread threadB = new Thread(() -> {
+
+        Thread t2 = new Thread(() -> {
             try {
-                fizzBuzz.buzz();
+                fizzBuzz.buzz(() -> System.out.println("buzz"));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
-        Thread threadC = new Thread(() -> {
+
+        Thread t3 = new Thread(() -> {
             try {
-                fizzBuzz.fizzbuzz();
+                fizzBuzz.fizzbuzz(() -> System.out.println("fizzbuzz"));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
-        Thread threadD = new Thread(() -> {
+
+        Thread t4 = new Thread(() -> {
             try {
-                fizzBuzz.number();
+                fizzBuzz.number(() -> {});
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
-        threadA.start();
-        threadB.start();
-        threadC.start();
-        threadD.start();
+
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
+
         try {
-            threadA.join();
-            threadB.join();
-            threadC.join();
-            threadD.join();
+            t1.join();
+            t2.join();
+            t3.join();
+            t4.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
